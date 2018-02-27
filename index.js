@@ -1,5 +1,14 @@
 var assert = require('nanoassert')
-var wasm = require('./blake2b')()
+var gasUsed = 0;
+var wasm = require('./blake2b')({
+  imports: {
+    'metering': {
+      'usegas': (gas) => {
+        gasUsed += gas
+      }
+    }
+  }
+})
 
 var head = 64
 var freeList = []
@@ -63,7 +72,9 @@ Blake2b.prototype.update = function (input) {
 
   if (head + input.length > wasm.memory.length) wasm.realloc(head + input.length)
   wasm.memory.set(input, head)
-  wasm.exports.blake2b_update(this.pointer, head, head + input.length)
+  var tmp = gasUsed;
+  wasm.exports.blake2b_compress(this.pointer)
+  console.log("compress: " + (gasUsed - tmp) / 10000 + " gas");
   return this
 }
 

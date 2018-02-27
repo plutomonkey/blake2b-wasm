@@ -9,4 +9,3 @@ blake2b.ready(function () {
 
   console.log('Blake2b hash of "hello world" is %s', hash)
 })
-
